@@ -181,12 +181,13 @@ const columns: ColumnDef<User>[] = [
                             v-for="(link, index) in users.links"
                             :key="index"
                             :href="link.url"
-                            v-html="link.label"
                             class="px-3 py-1.5 rounded-md text-[13px] font-semibold transition-colors"
                             :class="link.active 
                                 ? 'bg-white border border-slate-200 shadow-sm text-slate-900' 
                                 : (link.url ? 'text-slate-600 hover:bg-slate-200/50' : 'text-slate-300 cursor-not-allowed')"
-                        ></Component>
+                        >
+                            <span v-html="link.label"></span>
+                        </Component>
                     </div>
                 </div>
             </Card>

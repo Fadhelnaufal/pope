@@ -37,11 +37,19 @@ const props = defineProps<{
 // ==========================================
 const isTogglingAI = ref(false);
 const localAisEnabled = ref(!!props.phase.is_ai_enabled);
+const aiPromptSetting = ref(props.phase.ai_prompt_setting ?? '');
 
 watch(
     () => props.phase.is_ai_enabled,
     (newVal) => {
         localAisEnabled.value = !!newVal;
+    },
+);
+
+watch(
+    () => props.phase.ai_prompt_setting,
+    (newVal) => {
+        aiPromptSetting.value = newVal ?? '';
     },
 );
 
@@ -53,7 +61,7 @@ const toggleAI = () => {
     router.put(route('guru.phases.update', { phase: props.phase.id }), {
         name: props.phase.name,
         is_ai_enabled: localAisEnabled.value,
-        ai_prompt_setting: props.phase.ai_prompt_setting,
+        ai_prompt_setting: aiPromptSetting.value,
     }, {
         preserveScroll: true,
         onSuccess: () => toast.success(localAisEnabled.value ? 'AI Assistant Aktif' : 'AI Assistant Nonaktif', { icon: '🤖' }),
@@ -69,7 +77,7 @@ const saveAIPrompt = () => {
     router.put(route('guru.phases.update', { phase: props.phase.id }), {
         name: props.phase.name,
         is_ai_enabled: localAisEnabled.value,
-        ai_prompt_setting: props.phase.ai_prompt_setting,
+        ai_prompt_setting: aiPromptSetting.value,
     }, {
         preserveScroll: true,
         onSuccess: () => toast.success('Instruksi AI Disimpan', { icon: '✨' }),
@@ -190,7 +198,7 @@ const removeOption = (content: any, index: number) => {
                         Atur bagaimana AI harus mengevaluasi jawaban siswa pada fase ini. Contoh: <i>"Jika siswa salah, berikan clue terkait ciri atom karbon, jangan langsung beritahu jawabannya."</i>
                     </p>
                     <textarea
-                        v-model="phase.ai_prompt_setting"
+                        v-model="aiPromptSetting"
                         @blur="saveAIPrompt"
                         placeholder="Ketik instruksi evaluator AI di sini..."
                         class="min-h-[100px] w-full resize-y rounded-xl border border-indigo-200 bg-white p-4 text-[14px] text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"

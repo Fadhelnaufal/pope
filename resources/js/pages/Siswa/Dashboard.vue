@@ -1,11 +1,5 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ref } from 'vue';
-
-// Mengimpor mesin asli Shadcn Vue Chart secara langsung beserta komponen Tooltip
 import {
     VisXYContainer,
     VisArea,
@@ -14,8 +8,14 @@ import {
     VisCrosshair,
     VisTooltip,
 } from '@unovis/vue';
+import { ref } from 'vue';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
-const props = defineProps<{
+// Mengimpor mesin asli Shadcn Vue Chart secara langsung beserta komponen Tooltip
+
+defineProps<{
     classrooms?: Array<{
         id: number;
         class_name: string;

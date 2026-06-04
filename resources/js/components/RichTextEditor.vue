@@ -7,7 +7,7 @@ const props = defineProps<{
     placeholder?: string
 }>()
 
-const emit = defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue'])
 
 // Konfigurasi Toolbar (Cocok untuk Materi Kimia)
 const toolbarOptions = [
@@ -24,10 +24,10 @@ const toolbarOptions = [
 <template>
     <div class="quill-custom-wrapper border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm transition-all focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400">
         <QuillEditor
-            :content="modelValue"
+            :content="props.modelValue"
             contentType="html"
             @update:content="$emit('update:modelValue', $event)"
-            :placeholder="placeholder || 'Ketik materi atau pertanyaan di sini...'"
+            :placeholder="props.placeholder || 'Ketik materi atau pertanyaan di sini...'"
             theme="snow"
             :toolbar="toolbarOptions"
         />
