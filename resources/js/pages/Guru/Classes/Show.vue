@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 const props = defineProps<{
     classroom: {
@@ -50,10 +50,14 @@ const copyCode = () => {
 const isCreateTopicModalOpen = ref(false);
 const topicForm = useForm({ title: '', description: '' });
 
-const openTopicModal = () => { isCreateTopicModalOpen.value = true; };
+const openTopicModal = () => {
+ isCreateTopicModalOpen.value = true; 
+};
 const closeTopicModal = () => {
     isCreateTopicModalOpen.value = false;
-    setTimeout(() => { topicForm.reset(); topicForm.clearErrors(); }, 200);
+    setTimeout(() => {
+ topicForm.reset(); topicForm.clearErrors(); 
+}, 200);
 };
 
 const submitTopic = () => {
@@ -188,7 +192,7 @@ const submitTopic = () => {
                 </div>
                 
                 <div v-if="classroom.students && classroom.students.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <Card v-for="(siswa, index) in classroom.students" :key="siswa.id" class="flex items-center gap-4 p-4 border-slate-200 shadow-sm bg-white hover:border-indigo-200 transition-colors">
+                    <Card v-for="siswa in classroom.students" :key="siswa.id" class="flex items-center gap-4 p-4 border-slate-200 shadow-sm bg-white hover:border-indigo-200 transition-colors">
                         <div class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold uppercase shrink-0 border border-slate-200">
                             {{ siswa.name.substring(0, 2) }}
                         </div>

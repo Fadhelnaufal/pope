@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { toast } from 'vue-sonner';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -8,10 +10,7 @@ import {
     CardTitle,
     CardDescription,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     classes: Array<{

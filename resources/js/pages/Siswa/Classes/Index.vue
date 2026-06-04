@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
-const props = defineProps<{
+defineProps<{
     classrooms: Array<{
         id: number;
         class_name: string;

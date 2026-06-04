@@ -2,11 +2,11 @@
 import { Head, Link } from '@inertiajs/vue3';
 
 // --- IMPORT KOMPONEN SHADCN-VUE ---
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 import {
     Table,
     TableBody,

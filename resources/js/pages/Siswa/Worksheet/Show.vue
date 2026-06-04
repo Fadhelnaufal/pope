@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'vue-sonner';
 import { ref, onMounted } from 'vue';
@@ -35,7 +34,7 @@ onMounted(() => {
             try {
                 // Coba parse jadi array (untuk jawaban eval_cmcq)
                 answers.value[Number(key)] = JSON.parse(value);
-            } catch (e) {
+            } catch {
                 // Jika gagal parse, berarti teks biasa (eval_essay / eval_short)
                 answers.value[Number(key)] = value;
             }

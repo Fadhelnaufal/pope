@@ -1,19 +1,14 @@
 import { createInertiaApp } from '@inertiajs/vue3';
+import Aura from '@primevue/themes/aura';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import PrimeVue from 'primevue/config';
+import 'primeicons/primeicons.css';
 import { createApp, h } from 'vue';
+import { ZiggyVue } from 'ziggy-js'; // Harus dari 'ziggy-js'
 
 // 1. IMPORT LAYOUT
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
-
-// 2. IMPORT PRIMEVUE & TEMA
-import PrimeVue from 'primevue/config';
-import Aura from '@primevue/themes/aura';
-import 'primeicons/primeicons.css';
-
-
-// 4. IMPORT PLUGIN ZIGGY VUE DARI LOKASI YANG BENAR
-import { ZiggyVue } from 'ziggy-js'; // Harus dari 'ziggy-js'
 import { Ziggy } from './ziggy.js';  // Ini file fisik peta rute kita
 
 const appName = import.meta.env.VITE_APP_NAME || 'EduChem';
@@ -28,6 +23,7 @@ createInertiaApp({
         // PASANG LAYOUT SECARA OTOMATIS
         if (page.default.layout === undefined) {
             const lowerName = name.toLowerCase();
+
             if (lowerName.startsWith('auth/')) {
                 page.default.layout = AuthLayout;
             } else {

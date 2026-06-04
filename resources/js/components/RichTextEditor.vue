@@ -2,12 +2,12 @@
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
-const props = defineProps<{
+const { modelValue, placeholder } = defineProps<{
     modelValue: string
     placeholder?: string
 }>()
 
-const emit = defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue'])
 
 // Konfigurasi Toolbar (Cocok untuk Materi Kimia)
 const toolbarOptions = [

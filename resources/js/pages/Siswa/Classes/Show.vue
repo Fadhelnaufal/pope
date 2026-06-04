@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { Card } from '@/components/ui/card';
 
-const props = defineProps<{
+defineProps<{
     classroom: {
         id: number;
         class_name: string;
