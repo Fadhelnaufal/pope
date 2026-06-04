@@ -51,13 +51,14 @@ const isCreateTopicModalOpen = ref(false);
 const topicForm = useForm({ title: '', description: '' });
 
 const openTopicModal = () => {
- isCreateTopicModalOpen.value = true; 
+    isCreateTopicModalOpen.value = true;
 };
 const closeTopicModal = () => {
     isCreateTopicModalOpen.value = false;
     setTimeout(() => {
- topicForm.reset(); topicForm.clearErrors(); 
-}, 200);
+        topicForm.reset();
+        topicForm.clearErrors();
+    }, 200);
 };
 
 const submitTopic = () => {
