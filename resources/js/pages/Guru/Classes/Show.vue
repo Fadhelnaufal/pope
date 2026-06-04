@@ -49,6 +49,7 @@ const copyCode = () => {
 // ==========================================
 const isCreateTopicModalOpen = ref(false);
 const topicForm = useForm({ title: '', description: '' });
+const MODAL_RESET_DELAY_MS = 200;
 
 const openTopicModal = () => {
     isCreateTopicModalOpen.value = true;
@@ -58,7 +59,7 @@ const closeTopicModal = () => {
     setTimeout(() => {
         topicForm.reset();
         topicForm.clearErrors();
-    }, 200);
+    }, MODAL_RESET_DELAY_MS);
 };
 
 const submitTopic = () => {
