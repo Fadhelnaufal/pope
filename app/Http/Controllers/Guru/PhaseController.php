@@ -65,6 +65,28 @@ class PhaseController extends Controller
     // ==========================================
     // MANAJEMEN KONTEN FASE (BUILDER BLOK)
     // ==========================================
+    
+    /**
+     * Menyimpan seluruh blok konten dalam 1 kali Request (Mass Update)
+     */
+    public function syncContents(Request $request, TopicPhase $phase)
+    {
+        $request->validate([
+            'contents' => 'required|array',
+        ]);
+
+        // Kita looping dan update menggunakan relasi Eloquent yang sah dari model TopicPhase
+        foreach ($request->contents as $contentData) {
+            $phase->contents()
+                ->where('id', $contentData['id'])
+                ->update([
+                    'content_data' => $contentData['content_data']
+                ]);
+        }
+
+        return back();
+    }
+
     public function storeContent(Request $request, TopicPhase $phase)
     {
         $this->phaseService->createContent($phase, [

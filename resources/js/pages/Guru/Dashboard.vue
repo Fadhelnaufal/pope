@@ -137,7 +137,7 @@ const recentActivities = [
                     <div class="flex flex-col">
                         <span
                             class="text-[13px] leading-none font-bold text-slate-800"
-                            >Panel Guru</span
+                            >FADHEL</span
                         >
                         <span
                             class="mt-0.5 text-[9px] font-bold tracking-wider text-emerald-600"

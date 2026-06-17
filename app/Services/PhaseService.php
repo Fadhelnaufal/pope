@@ -11,6 +11,12 @@ class PhaseService
     public function createPhase(Topic $topic, array $data)
     {
         $data['order'] = $topic->phases()->count() + 1;
+        
+        // TAMBAHKAN DUA BARIS INI: 
+        // Berikan nilai bawaan agar PostgreSQL tidak menolak saat fase pertama kali dibuat
+        $data['is_ai_enabled'] = $data['is_ai_enabled'] ?? false;
+        $data['description'] = $data['description'] ?? null; 
+
         return $topic->phases()->create($data);
     }
 

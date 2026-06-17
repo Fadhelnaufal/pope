@@ -11,13 +11,17 @@ class StudentAnswer extends Model
 
     protected $guarded = [];
 
-    // Relasi ke pertanyaan (PhaseContent)
+    // Relasi ke TopicPhase
+    public function phase()
+    {
+        return $this->belongsTo(TopicPhase::class, 'phase_id');
+    }
+
     public function content()
     {
         return $this->belongsTo(PhaseContent::class, 'content_id');
     }
 
-    // Relasi ke User (Siswa)
     public function user()
     {
         return $this->belongsTo(User::class);

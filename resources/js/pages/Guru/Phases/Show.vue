@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'vue-sonner';
-// PASTIKAN FILE INI SUDAH ADA DI FOLDER COMPONENTS
 import RichTextEditor from '@/components/RichTextEditor.vue';
 
 const props = defineProps<{
@@ -56,10 +55,10 @@ const toggleAI = () => {
         ai_prompt_setting: props.phase.ai_prompt_setting,
     }, {
         preserveScroll: true,
-        onSuccess: () => toast.success(localAisEnabled.value ? 'AI Assistant Aktif' : 'AI Assistant Nonaktif', { icon: '🤖' }),
+        onSuccess: () => toast.success(localAisEnabled.value ? '🤖 AI Assistant Aktif' : '🤖 AI Assistant Nonaktif'),
         onError: () => {
             localAisEnabled.value = !localAisEnabled.value;
-            toast.error('Gagal mengubah status AI');
+            toast.error('⚠️ Gagal mengubah status AI');
         },
         onFinish: () => (isTogglingAI.value = false),
     });
@@ -72,7 +71,7 @@ const saveAIPrompt = () => {
         ai_prompt_setting: props.phase.ai_prompt_setting,
     }, {
         preserveScroll: true,
-        onSuccess: () => toast.success('Instruksi AI Disimpan', { icon: '✨' }),
+        onSuccess: () => toast.success('✨ Instruksi AI Disimpan'),
     });
 };
 
@@ -85,25 +84,32 @@ watch(
     () => props.phase.contents,
     (newContents) => {
         let cloned = JSON.parse(JSON.stringify(newContents || []));
+        
+        cloned.sort((a: any, b: any) => (a.order - b.order) || (a.id - b.id));
+
         cloned.forEach((c: any) => {
             if (!c.content_data || Array.isArray(c.content_data)) c.content_data = {};
             
-            // Inisialisasi struktur JSON sesuai Tipe Komponen
             if (c.type === 'text' && typeof c.content_data.body === 'undefined') c.content_data.body = '';
             if (c.type === 'image' && typeof c.content_data.url === 'undefined') c.content_data.url = '';
             if (c.type === 'h5p' && typeof c.content_data.path === 'undefined') c.content_data.path = '';
             
-            // Migrasi tipe lama 'input_text' menjadi 'eval_essay'
             if (c.type === 'input_text') c.type = 'eval_essay';
             
             if (['eval_essay', 'eval_short', 'eval_file'].includes(c.type) && typeof c.content_data.question === 'undefined') {
-                c.content_data.question = c.content_data.label || ''; // Support legacy label
+                c.content_data.question = c.content_data.label || ''; 
             }
             if (['eval_mcq', 'eval_cmcq'].includes(c.type)) {
                 if (typeof c.content_data.question === 'undefined') c.content_data.question = '';
                 if (!Array.isArray(c.content_data.options)) c.content_data.options = ['Opsi 1', 'Opsi 2'];
+                
+                if (c.type === 'eval_mcq' && typeof c.content_data.correct_answer === 'undefined') {
+                    c.content_data.correct_answer = '';
+                }
+                if (c.type === 'eval_cmcq' && !Array.isArray(c.content_data.correct_answers)) {
+                    c.content_data.correct_answers = [];
+                }
             }
-            // Inisialisasi untuk Forum Diskusi
             if (c.type === 'discussion' && typeof c.content_data.topic === 'undefined') {
                 c.content_data.topic = '';
             }
@@ -116,9 +122,9 @@ watch(
 const addContent = (type: string) => {
     let initialData = {};
     if (type === 'text') initialData = { body: '' };
-    if (['eval_mcq', 'eval_cmcq'].includes(type)) initialData = { question: '', options: ['Pilihan A', 'Pilihan B'] };
+    if (type === 'eval_mcq') initialData = { question: '', options: ['Pilihan A', 'Pilihan B'], correct_answer: '' };
+    if (type === 'eval_cmcq') initialData = { question: '', options: ['Pilihan A', 'Pilihan B'], correct_answers: [] };
     if (['eval_essay', 'eval_short'].includes(type)) initialData = { question: '' };
-    // Template data awal untuk tipe baru
     if (type === 'eval_file') initialData = { question: 'Unggah foto hasil kerja atau buku catatan Anda di sini.' };
     if (type === 'discussion') initialData = { topic: 'Mari berdiskusi! Apa pendapat Anda tentang materi di atas?' };
     
@@ -127,16 +133,7 @@ const addContent = (type: string) => {
         content_data: initialData
     }, { 
         preserveScroll: true,
-        onSuccess: () => toast.success(`Blok ditambahkan.`)
-    });
-};
-
-const saveContent = (content: any) => {
-    router.put(route('guru.contents.update', { content: content.id }), {
-        content_data: content.content_data,
-    }, {
-        preserveScroll: true,
-        onSuccess: () => toast.success('Tersimpan', { icon: '💾' }),
+        onSuccess: () => toast.success(`Blok ditambahkan. Jangan lupa klik Simpan Seluruh Fase.`)
     });
 };
 
@@ -149,19 +146,49 @@ const removeContent = (id: number) => {
     }
 };
 
-// HELPER UNTUK OPSI PILIHAN GANDA
 const addOption = (content: any) => {
     content.content_data.options.push(`Pilihan Baru`);
 };
 const removeOption = (content: any, index: number) => {
     content.content_data.options.splice(index, 1);
 };
+
+// ==========================================
+// 3. FUNGSI MASS UPDATE (1 KALI TEMBAK SUPER CEPAT)
+// ==========================================
+const isSavingAll = ref(false);
+
+const saveAllContents = () => {
+    if (localContents.value.length === 0) {
+        toast.info('Belum ada materi untuk disimpan.');
+        return;
+    }
+
+    isSavingAll.value = true;
+    
+    // PERBAIKAN DI SINI: Kirim semua data SEKALIGUS ke rute 'contents.sync'
+    router.put(route('guru.contents.sync', { phase: props.phase.id }), {
+        contents: localContents.value
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('✨ Seluruh Materi & Pertanyaan Berhasil Disimpan!');
+        },
+        onError: (errors) => {
+            console.error('Error server:', errors);
+            toast.error('⚠️ Gagal menyimpan. Silakan coba lagi.');
+        },
+        onFinish: () => {
+            isSavingAll.value = false;
+        }
+    });
+};
 </script>
 
 <template>
     <Head :title="`Builder: ${phase.name}`" />
 
-    <div class="min-h-screen bg-[#F8FAFC] px-6 py-8 font-sans lg:px-10">
+    <div class="min-h-screen bg-[#F8FAFC] px-6 py-8 font-sans lg:px-10 pb-32 relative">
         <div class="mx-auto max-w-4xl">
             
             <div class="mb-6 flex items-center gap-2 text-[12px] font-bold text-slate-500">
@@ -207,9 +234,12 @@ const removeOption = (content: any, index: number) => {
 
             <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-lg font-extrabold text-slate-900">Konstruksi Lembar Kerja Siswa</h2>
-                <span class="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold text-slate-400 shadow-sm">
-                    <i class="pi pi-cloud-upload mr-1"></i> Auto-Save
-                </span>
+                
+                <Link :href="route('guru.phases.evaluations.index', { classroom: classroom.id, topic: topic.id, phase: phase.id })">
+                    <Button class="bg-emerald-600 hover:bg-emerald-700 text-white h-9 rounded-xl text-xs font-bold shadow-sm transition-all hover:scale-105">
+                        <i class="pi pi-users mr-1.5"></i> Lihat Evaluasi Siswa
+                    </Button>
+                </Link>
             </div>
 
             <div class="mb-8 space-y-6">
@@ -239,18 +269,17 @@ const removeOption = (content: any, index: number) => {
                         <div class="p-6">
                             <div v-if="content.type === 'text'">
                                 <RichTextEditor v-model="content.content_data.body" placeholder="Tuliskan narasi penjelasan materi di sini..." />
-                                <div class="mt-3 flex justify-end"><Button @click="saveContent(content)" size="sm" class="bg-slate-800 text-white">Simpan Teks</Button></div>
                             </div>
 
                             <div v-if="content.type === 'image'" class="space-y-4">
-                                <Input v-model="content.content_data.url" @blur="saveContent(content)" placeholder="Paste URL Link Gambar di sini (https://...)" class="bg-slate-50" />
+                                <Input v-model="content.content_data.url" placeholder="Paste URL Link Gambar di sini (https://...)" class="bg-slate-50" />
                                 <div v-if="content.content_data.url" class="flex justify-center bg-slate-50 rounded-xl p-4 border border-slate-100">
                                     <img :src="content.content_data.url" class="max-h-64 rounded-lg object-contain" />
                                 </div>
                             </div>
 
                             <div v-if="content.type === 'h5p'">
-                                <Input v-model="content.content_data.path" @blur="saveContent(content)" placeholder="Paste Link Embed H5P/Video Interaktif di sini..." class="mb-3 bg-slate-50" />
+                                <Input v-model="content.content_data.path" placeholder="Paste Link Embed H5P/Video Interaktif di sini..." class="mb-3 bg-slate-50" />
                                 <div v-if="content.content_data.path" class="w-full aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-900">
                                     <iframe :src="content.content_data.path" class="h-full w-full border-0"></iframe>
                                 </div>
@@ -271,16 +300,35 @@ const removeOption = (content: any, index: number) => {
                                         </div>
                                     </div>
                                     <Button @click="addOption(content)" type="button" variant="outline" class="h-8 border-dashed border-slate-300 text-[11px] text-slate-600"><i class="pi pi-plus mr-1"></i> Tambah Opsi</Button>
+
+                                    <div class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 animate-in fade-in duration-300">
+                                        <label class="mb-3 block text-[12px] font-bold text-emerald-800 uppercase tracking-widest">
+                                            <i class="pi pi-key mr-1"></i> Kunci Jawaban Benar
+                                        </label>
+                                        
+                                        <div v-if="content.type === 'eval_mcq'">
+                                            <select v-model="content.content_data.correct_answer" class="w-full rounded-lg border border-emerald-200 bg-white p-3 text-[14px] text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                                <option value="" disabled>-- Pilih Kunci Jawaban --</option>
+                                                <option v-for="(opt, oIdx) in content.content_data.options" :key="oIdx" :value="opt">
+                                                    {{ String.fromCharCode(65 + oIdx) }}. {{ opt || '(Opsi masih kosong)' }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div v-if="content.type === 'eval_cmcq'" class="space-y-2">
+                                            <p class="text-[11px] text-emerald-600 font-semibold mb-3">Centang semua opsi yang benar:</p>
+                                            <label v-for="(opt, oIdx) in content.content_data.options" :key="oIdx" class="flex cursor-pointer items-center gap-3 rounded-lg border border-emerald-100 bg-white px-4 py-2.5 transition-all hover:bg-emerald-50 hover:border-emerald-300">
+                                                <input type="checkbox" :value="opt" v-model="content.content_data.correct_answers" class="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-emerald-300" />
+                                                <span class="text-[14px] text-slate-700 font-medium">{{ String.fromCharCode(65 + oIdx) }}. {{ opt || '(Opsi masih kosong)' }}</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex justify-end"><Button @click="saveContent(content)" size="sm" class="bg-indigo-600 text-white hover:bg-indigo-700">Simpan Pertanyaan</Button></div>
                             </div>
 
                             <div v-if="['eval_short', 'eval_essay'].includes(content.type)" class="space-y-4">
                                 <label class="block text-[12px] font-bold text-slate-700">Pertanyaan / Instruksi Kerja</label>
                                 <RichTextEditor v-model="content.content_data.question" placeholder="Ketik pertanyaan / perintah untuk siswa..." />
-                                <div class="flex justify-end">
-                                    <Button @click="saveContent(content)" size="sm" class="bg-amber-600 text-white hover:bg-amber-700">Simpan Evaluasi</Button>
-                                </div>
                             </div>
 
                             <div v-if="content.type === 'eval_file'" class="space-y-4">
@@ -292,7 +340,6 @@ const removeOption = (content: any, index: number) => {
                                     <p class="text-sm font-bold text-slate-600">Area Upload Siswa</p>
                                     <p class="text-[11px] text-slate-500">Siswa akan melihat area form unggah (Drag & Drop) foto/dokumen di sini.</p>
                                 </div>
-                                <div class="flex justify-end"><Button @click="saveContent(content)" size="sm" class="bg-pink-600 text-white hover:bg-pink-700">Simpan Instruksi</Button></div>
                             </div>
 
                             <div v-if="content.type === 'discussion'" class="space-y-4">
@@ -302,9 +349,8 @@ const removeOption = (content: any, index: number) => {
                                 <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-6 text-center opacity-70">
                                     <i class="pi pi-comments text-3xl text-slate-400 mb-2"></i>
                                     <p class="text-sm font-bold text-slate-600">Forum Diskusi Kelas (Live)</p>
-                                    <p class="text-[11px] text-slate-500">Komentar siswa secara real-time akan muncul di sini. Siswa dapat saling me-reply.</p>
+                                    <p class="text-[11px] text-slate-500">Komentar siswa secara real-time akan muncul di sini.</p>
                                 </div>
-                                <div class="flex justify-end"><Button @click="saveContent(content)" size="sm" class="bg-sky-600 text-white hover:bg-sky-700">Simpan Forum Diskusi</Button></div>
                             </div>
 
                         </div>
@@ -340,4 +386,12 @@ const removeOption = (content: any, index: number) => {
 
         </div>
     </div>
+
+    <div v-if="localContents.length > 0" class="fixed bottom-8 right-8 z-[100]">
+        <Button @click="saveAllContents" :disabled="isSavingAll" class="h-14 px-8 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+            <i class="pi text-xl" :class="isSavingAll ? 'pi-spinner pi-spin' : 'pi-save'"></i>
+            <span class="text-[15px] uppercase tracking-wider">{{ isSavingAll ? 'Menyimpan...' : 'Simpan Seluruh Fase' }}</span>
+        </Button>
+    </div>
+
 </template>

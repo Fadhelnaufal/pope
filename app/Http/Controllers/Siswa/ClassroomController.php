@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
+use App\Models\StudentAnswer; // <-- IMPORT MODEL INI
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -63,23 +64,36 @@ class ClassroomController extends Controller
         return back()->with('success', 'Berhasil bergabung dengan kelas: ' . $classroom->class_name);
     }
 
+    /**
+     * Menampilkan Detail Kelas dan Daftar Materi
+     */
     public function show(Request $request, Classroom $classroom)
-{
-    // Pastikan siswa member kelas
-    if (!$request->user()->joinedClasses()->where('class_id', $classroom->id)->exists()) {
-        abort(403, 'Akses ditolak.');
+    {
+        // Pastikan siswa member kelas
+        if (!$request->user()->joinedClasses()->where('class_id', $classroom->id)->exists()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        // Memuat topik yang sudah dipublish beserta fase-fasenya
+        $classroom->load(['teacher', 'topics' => function ($query) {
+            $query->where('is_published', true)
+                  ->with(['phases' => function($q) {
+                      $q->orderBy('order', 'asc');
+                  }]);
+        }]);
+
+        // ==========================================
+        // AMBIL DATA FASE YANG SUDAH DIKERJAKAN
+        // ==========================================
+        $completedPhaseIds = StudentAnswer::where('user_id', $request->user()->id)
+            ->pluck('phase_id')
+            ->unique()
+            ->values() // Merapikan ulang index array agar terbaca rapi di Vue
+            ->toArray();
+
+        return inertia('Siswa/Classes/Show', [
+            'classroom' => $classroom,
+            'completedPhaseIds' => $completedPhaseIds // <-- KIRIM KE VUE
+        ]);
     }
-
-    // Memuat topik yang sudah dipublish beserta fase-fasenya
-    $classroom->load(['teacher', 'topics' => function ($query) {
-        $query->where('is_published', true)
-              ->with(['phases' => function($q) {
-                  $q->orderBy('order', 'asc');
-              }]);
-    }]);
-
-    return inertia('Siswa/Classes/Show', [
-        'classroom' => $classroom
-    ]);
-}
 }

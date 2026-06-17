@@ -1,2 +1,42 @@
-*
-!.gitignore
+# IDE & System Files
+.DS_Store
+.idea/
+.vscode/
+Thumbs.db
+*.log
+
+# Dependencies
+/node_modules
+/vendor
+
+# Environment Variables
+.env
+.env.*.php
+.env.php
+.env.bak
+
+# Laravel Storage & Cache (Keep the directory structure, ignore the content)
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/framework/cache/.gitignore
+!/storage/framework/sessions/.gitignore
+!/storage/framework/views/.gitignore
+!/storage/logs/.gitignore
+
+# Public Assets & Build
+/public/build
+/public/hot
+/public/storage
+/public/mix-manifest.json
+/public/hot
+
+# Database
+/database/*.sqlite
+/database/*.sqlite-wal
+
+# PHPUnit & Coverage
+.phpunit.result.cache
+/coverage

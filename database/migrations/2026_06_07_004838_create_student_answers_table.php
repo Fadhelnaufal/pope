@@ -17,6 +17,12 @@ return new class extends Migration
             // Menggunakan longText/JSON untuk menampung teks, array (checkbox), atau path gambar
             $table->longText('answer_data')->nullable(); 
             
+            // ==========================================
+            // KOLOM BARU: UNTUK REKAP NILAI (AUTO-CORRECT)
+            // ==========================================
+            $table->boolean('is_correct')->nullable(); 
+            $table->integer('score')->default(0);      
+            
             // Ini tempat AI memberikan nilai/feedback atas jawaban di atas
             $table->text('ai_feedback')->nullable(); 
             

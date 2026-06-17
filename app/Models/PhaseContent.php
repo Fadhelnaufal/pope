@@ -17,15 +17,12 @@ class PhaseContent extends Model
         'order',
     ];
 
-    // PENTING: Cast content_data menjadi array agar otomatis di-serialize/deserialize dari JSON
     protected $casts = [
         'content_data' => 'array',
     ];
 
-    // Relasi balik ke TopicPhase
     public function phase(): BelongsTo
     {
         return $this->belongsTo(TopicPhase::class, 'topic_phase_id');
     }
-    
 }

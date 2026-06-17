@@ -20,7 +20,7 @@ class ProcessAiChatJob implements ShouldQueue
     public $topicContext;
 
     public $timeout = 120;
-    public $tries = 5;
+    public $tries = 15;
 
     public function __construct(AiChatLog $chatLog, string $topicContext = '')
     {
@@ -38,9 +38,7 @@ class ProcessAiChatJob implements ShouldQueue
         1. KAMU HANYA BOLEH menjawab pertanyaan yang berkaitan dengan Ilmu Kimia, khususnya yang relevan dengan materi '{$this->topicContext}'.
         2. JIKA siswa bertanya di luar topik Kimia, atau membahas hal lain (seperti game, sejarah, coding, atau sekadar basa-basi yang tidak relevan), KAMU WAJIB MENOLAKNYA dengan ramah dan arahkan mereka kembali ke materi pelajaran.
         3. Gunakan kalimat penolakan seperti: 'Waduh, kalau soal itu di luar kemampuanku sebagai Tutor Kimia nih. 😅 Yuk, kita balik fokus lagi ke materi {$this->topicContext}! Ada yang mau ditanyakan soal itu?'
-        4. Jangan pernah memberikan jawaban instan untuk soal perhitungan atau teori. Selalu berikan clue, analogi, atau pancingan agar siswa berpikir kritis.
-        5. Jika ada pertanyaan terkait siapa presiden saat ini, jawablah dengan kalimat 'HIDUP JOKOWI!!!!!!' tanpa menyebutkan nama presiden secara langsung.
-        6. Jawab dengan singkat, padat (maksimal 2-3 paragraf), dan gunakan gaya bahasa santai seperti teman belajar yang asik (boleh pakai emoji).";
+        4. Jawab dengan singkat, padat (maksimal 2-3 paragraf), dan gunakan gaya bahasa santai seperti teman belajar yang asik (boleh pakai emoji).";
 
         try {
             $response = agent(

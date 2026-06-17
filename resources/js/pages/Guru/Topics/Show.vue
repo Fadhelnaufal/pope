@@ -57,16 +57,14 @@ const togglePublish = () => {
             onSuccess: () => {
                 toast.success(
                     localIsPublished.value
-                        ? 'Materi Dipublikasikan'
-                        : 'Materi Disembunyikan (Draft)',
+                        ? '🚀 Materi Dipublikasikan'
+                        : '🔒 Materi Disembunyikan (Draft)',
                     {
-                        description: 'Status publikasi topik berhasil diperbarui ke siswa.',
-                        icon: localIsPublished.value ? '🚀' : '🔒'
+                        description: 'Status publikasi topik berhasil diperbarui ke siswa.'
                     },
                 );
             },
             onError: () => {
-                // Revert jika gagal
                 localIsPublished.value = !localIsPublished.value;
                 toast.error('Gagal mengubah status publikasi!');
             },
@@ -133,7 +131,6 @@ const executeDelete = () => {
         }),
         {
             onSuccess: () => {
-                // Note: Redirect ditangani oleh controller (kembali ke detail kelas)
                 toast.success('Topik Dihapus', {
                     description: `Topik "${props.topic.title}" berhasil dihapus permanen.`,
                 });
@@ -166,13 +163,12 @@ const closeCreatePhaseModal = () => {
 };
 
 const submitCreatePhase = () => {
-    createPhaseForm.post(route('guru.phases.store', { topic: props.topic.id }), {
+    createPhaseForm.post(route('guru.phases.store', { classroom: props.classroom.id, topic: props.topic.id }), {
         preserveScroll: true,
         onSuccess: () => {
             closeCreatePhaseModal();
-            toast.success('Fase Berhasil Dibuat', { 
-                description: 'Fase baru telah ditambahkan ke dalam topik.',
-                icon: '✨'
+            toast.success('✨ Fase Berhasil Dibuat', { 
+                description: 'Fase baru telah ditambahkan ke dalam topik.'
             });
         },
     });
@@ -182,12 +178,11 @@ const submitCreatePhase = () => {
 // 5. LOGIKA UPDATE & HAPUS FASE
 // ==========================================
 const updatePhase = (phase: any) => {
-    // Dipicu saat input field fase kehilangan fokus (blur)
     router.put(
         route('guru.phases.update', { phase: phase.id }),
         {
             name: phase.name,
-            is_ai_enabled: !!phase.is_ai_enabled, // Paksa jadi boolean
+            is_ai_enabled: !!phase.is_ai_enabled, 
         },
         {
             preserveScroll: true,
@@ -269,14 +264,26 @@ const deletePhase = (id: number) => {
                 </div>
             </Card>
 
-            <div class="mb-6 flex items-center justify-between">
+            <!-- PENEMPATAN TOMBOL RUANG DISKUSI DAN TAMBAH FASE -->
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-extrabold text-slate-900">Daftar Fase Pembelajaran (POE)</h2>
-                    <p class="text-[13px] text-slate-500">Buat alur tahapan pembelajaran: Predict, Observe, dan Explain.</p>
+                    <p class="text-[13px] text-slate-500">Buat alur tahapan pembelajaran dan kelola forum diskusi kelas.</p>
                 </div>
-                <Button @click="openCreatePhaseModal" class="bg-indigo-600 text-white shadow-md hover:bg-indigo-700">
-                    <i class="pi pi-plus mr-2"></i> Tambah Fase Baru
-                </Button>
+                
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- TOMBOL FORUM DISKUSI -->
+                    <Link :href="route('guru.classes.topics.discussions.index', { classroom: classroom.id, topic: topic.id })">
+                        <Button variant="outline" class="border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 h-10 rounded-xl text-xs font-bold shadow-sm transition-all hover:scale-105">
+                            <i class="pi pi-comments mr-2"></i> Ruang Diskusi
+                        </Button>
+                    </Link>
+
+                    <!-- TOMBOL TAMBAH FASE -->
+                    <Button @click="openCreatePhaseModal" class="bg-indigo-600 text-white shadow-md hover:bg-indigo-700 h-10 rounded-xl text-xs font-bold transition-all hover:scale-105">
+                        <i class="pi pi-plus mr-1.5"></i> Tambah Fase Baru
+                    </Button>
+                </div>
             </div>
 
             <div class="space-y-4">
@@ -337,6 +344,7 @@ const deletePhase = (id: number) => {
         </div>
     </div>
 
+    <!-- MODAL FASE -->
     <Teleport to="body">
         <div v-if="isCreatePhaseModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 px-4 backdrop-blur-sm">
             <div class="w-full max-w-[450px] animate-in overflow-hidden rounded-2xl bg-white shadow-2xl duration-200 zoom-in-95 fade-in">
@@ -367,6 +375,7 @@ const deletePhase = (id: number) => {
         </div>
     </Teleport>
 
+    <!-- MODAL EDIT TOPIK -->
     <Teleport to="body">
         <div v-if="isEditModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 px-4 backdrop-blur-sm">
             <div class="w-full max-w-[450px] animate-in overflow-hidden rounded-2xl bg-white shadow-2xl duration-200 zoom-in-95 fade-in">
@@ -401,6 +410,7 @@ const deletePhase = (id: number) => {
         </div>
     </Teleport>
 
+    <!-- MODAL HAPUS -->
     <Teleport to="body">
         <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 px-4 backdrop-blur-sm">
             <div class="w-full max-w-[400px] animate-in overflow-hidden rounded-2xl bg-white p-6 text-center shadow-2xl duration-200 zoom-in-95 fade-in">

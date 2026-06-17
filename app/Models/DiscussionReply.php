@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class DiscussionReply extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'discussion_id',
+        'user_id',
+        'content',
+    ];
+
+    // Relasi ke User (Siapa yang menulis komentar)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relasi ke Diskusi Induk (Komentar ini berada di thread diskusi mana)
+    public function discussion()
+    {
+        return $this->belongsTo(Discussion::class);
+    }
+}

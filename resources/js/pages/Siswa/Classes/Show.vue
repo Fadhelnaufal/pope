@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button'; // <-- JANGAN LUPA IMPORT BUTTON
 
 const props = defineProps<{
     classroom: {
@@ -21,7 +22,14 @@ const props = defineProps<{
             };
         }>;
     };
+    // PROP BARU: Array ID Fase yang sudah dikerjakan siswa
+    completedPhaseIds?: number[]; 
 }>();
+
+// Fungsi Cek Apakah Fase Sudah Selesai
+const isPhaseCompleted = (phaseId: number) => {
+    return props.completedPhaseIds?.includes(phaseId) || false;
+};
 </script>
 
 <template>
@@ -68,13 +76,22 @@ const props = defineProps<{
                 <div v-if="classroom.topics.length > 0" class="space-y-6">
                     <Card v-for="(topic, index) in classroom.topics" :key="topic.id" class="flex flex-col gap-5 rounded-2xl border-slate-200 bg-white p-6 transition-all hover:border-indigo-300 hover:shadow-md">
                         
-                        <div class="flex items-start gap-4">
+                        <div class="flex flex-col md:flex-row md:items-start gap-4">
                             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-xl font-black text-indigo-600">
                                 {{ index + 1 }}
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-lg font-bold text-slate-900">{{ topic.title }}</h3>
                                 <p class="mt-1 text-[13px] text-slate-500">{{ topic.description || 'Pilih fase di bawah ini untuk mulai belajar.' }}</p>
+                            </div>
+                            
+                            <!-- TOMBOL PINTU MASUK FORUM DISKUSI SISWA -->
+                            <div class="shrink-0 mt-2 md:mt-0">
+                                <Link :href="route('siswa.classes.topics.discussions.index', { classroom: classroom.id, topic: topic.id })">
+                                    <Button variant="outline" class="h-10 rounded-xl border-sky-200 bg-sky-50 px-5 text-[12px] font-bold text-sky-700 shadow-sm transition-all hover:scale-105 hover:bg-sky-100">
+                                        <i class="pi pi-comments mr-2"></i> Ruang Diskusi
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
 
@@ -95,16 +112,27 @@ const props = defineProps<{
                                         phase: phase.id 
                                     })"
                                 >
-                                    <div class="group flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-600">
+                                    <!-- KOTAK FASE DINAMIS -->
+                                    <div class="group flex cursor-pointer items-center justify-between rounded-xl border p-3 shadow-sm transition-all"
+                                         :class="isPhaseCompleted(phase.id) ? 'border-emerald-200 bg-emerald-50 hover:border-emerald-600 hover:bg-emerald-600' : 'border-slate-200 bg-slate-50 hover:border-indigo-600 hover:bg-indigo-600'">
+                                        
                                         <div class="flex items-center gap-3">
-                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-bold text-slate-600 transition-colors group-hover:text-indigo-600">
-                                                {{ pIndex + 1 }}
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-bold transition-colors"
+                                                  :class="isPhaseCompleted(phase.id) ? 'text-emerald-600' : 'text-slate-600 group-hover:text-indigo-600'">
+                                                <i v-if="isPhaseCompleted(phase.id)" class="pi pi-check text-[10px]"></i>
+                                                <span v-else>{{ pIndex + 1 }}</span>
                                             </span>
-                                            <span class="text-[13px] font-bold text-slate-700 transition-colors group-hover:text-white">
+                                            <span class="text-[13px] font-bold transition-colors group-hover:text-white"
+                                                  :class="isPhaseCompleted(phase.id) ? 'text-emerald-800' : 'text-slate-700'">
                                                 {{ phase.name }}
                                             </span>
                                         </div>
-                                        <i class="pi pi-arrow-right text-[11px] text-slate-400 transition-colors group-hover:text-indigo-200"></i>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <span v-if="isPhaseCompleted(phase.id)" class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 transition-colors group-hover:text-emerald-100">Selesai</span>
+                                            <i class="pi transition-colors" :class="isPhaseCompleted(phase.id) ? 'pi-check-circle text-emerald-500 group-hover:text-emerald-200' : 'pi-arrow-right text-[11px] text-slate-400 group-hover:text-indigo-200'"></i>
+                                        </div>
+                                        
                                     </div>
                                 </Link>
                             </div>
