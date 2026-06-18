@@ -7,6 +7,7 @@ use App\Models\Classroom;
 use App\Models\Topic;
 use App\Models\TopicPhase;
 use App\Models\PhaseContent;
+use App\Models\Discussion; // <--- TAMBAHAN IMPORT
 use App\Services\PhaseService;
 use Illuminate\Http\Request;
 
@@ -37,10 +38,19 @@ class PhaseController extends Controller
             $query->orderBy('order', 'asc');
         }]);
 
+        // ==========================================
+        // TAMBAHAN: Ambil data Topik Diskusi di Fase ini
+        // ==========================================
+        $discussions = Discussion::with(['user', 'replies.user'])
+            ->where('phase_id', $phase->id)
+            ->latest()
+            ->get();
+
         return inertia('Guru/Phases/Show', [
             'classroom' => $classroom,
             'topic' => $topic,
-            'phase' => $phase
+            'phase' => $phase,
+            'discussions' => $discussions // <--- KIRIM KE VUE
         ]);
     }
 

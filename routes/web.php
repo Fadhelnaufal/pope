@@ -70,8 +70,10 @@ Route::middleware(['auth', 'role:GURU'])->prefix('guru')->name('guru.')->group(f
     Route::get('classes/{classroom}/topics/{topic}/phases/{phase}/discussions', [GuruDiscussionController::class, 'index'])->name('classes.topics.phases.discussions.index');
     Route::post('classes/{classroom}/topics/{topic}/phases/{phase}/discussions', [GuruDiscussionController::class, 'store'])->name('classes.topics.phases.discussions.store');
     Route::get('classes/{classroom}/topics/{topic}/phases/{phase}/discussions/{discussion}', [GuruDiscussionController::class, 'show'])->name('classes.topics.phases.discussions.show');
-    Route::delete('discussions/{discussion}', [GuruDiscussionController::class, 'destroy'])->name('classes.topics.phases.discussions.destroy');
     
+    // Rute Edit & Delete Diskusi/Balasan
+    Route::put('discussions/{discussion}', [GuruDiscussionController::class, 'update'])->name('classes.topics.phases.discussions.update');
+    Route::delete('discussions/{discussion}', [GuruDiscussionController::class, 'destroy'])->name('classes.topics.phases.discussions.destroy');
     Route::post('discussions/{discussion}/replies', [GuruDiscussionController::class, 'storeReply'])->name('discussions.replies.store');
     Route::delete('replies/{reply}', [GuruDiscussionController::class, 'destroyReply'])->name('discussions.replies.destroy');
 });
@@ -95,9 +97,11 @@ Route::middleware(['auth', 'role:SISWA'])->prefix('siswa')->name('siswa.')->grou
     // ==========================================
     // FORUM DISKUSI FASE (SISWA)
     // ==========================================
-    Route::get('classes/{classroom}/topics/{topic}/phases/{phase}/discussions', [SiswaDiscussionController::class, 'index'])->name('classes.topics.phases.discussions.index');
-    Route::get('classes/{classroom}/topics/{topic}/phases/{phase}/discussions/{discussion}', [SiswaDiscussionController::class, 'show'])->name('classes.topics.phases.discussions.show');
-    Route::post('discussions/{discussion}/replies', [SiswaDiscussionController::class, 'storeReply'])->name('discussions.replies.store');
+    Route::post('discussions/{discussion}/replies', [SiswaDiscussionController::class, 'reply'])->name('discussions.reply.store');
+    
+    // Rute Edit & Delete Balasan Siswa
+    Route::put('replies/{reply}', [SiswaDiscussionController::class, 'updateReply'])->name('replies.update');
+    Route::delete('replies/{reply}', [SiswaDiscussionController::class, 'destroyReply'])->name('replies.destroy');
 });
 
 require __DIR__.'/settings.php';

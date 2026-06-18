@@ -10,7 +10,7 @@ class Discussion extends Model
     use HasFactory;
 
     protected $fillable = [
-        'topic_id',
+        'phase_id', // UBAH: Dari topic_id menjadi phase_id
         'user_id',
         'title',
         'description',
@@ -22,10 +22,10 @@ class Discussion extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Relasi ke Topic (Diskusi ini untuk materi topik apa)
-    public function topic()
+    // Relasi ke TopicPhase (Diskusi ini menempel di fase mana)
+    public function phase()
     {
-        return $this->belongsTo(Topic::class);
+        return $this->belongsTo(TopicPhase::class, 'phase_id');
     }
 
     // Relasi ke balasan/komentar (Satu diskusi punya banyak balasan)

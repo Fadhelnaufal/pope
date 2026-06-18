@@ -3,45 +3,63 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
-use App\Models\Classroom;
-use App\Models\Topic;
-use App\Models\Phase; // <--- WAJIB DI-IMPORT
 use App\Models\Discussion;
+use App\Models\DiscussionReply;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class DiscussionController extends Controller
 {
-    // Tampilkan daftar Forum (Read-Only untuk Siswa)
-    public function index(Classroom $classroom, Topic $topic, Phase $phase)
+    /**
+     * Menyimpan Balasan (Komentar) Siswa pada Diskusi buatan Guru
+     */
+    public function reply(Request $request, Discussion $discussion)
     {
-        $discussions = Discussion::with('user')
-            ->withCount('replies')
-            ->where('phase_id', $phase->id) // <--- UBAH KE phase_id
-            ->latest()
-            ->get();
+        $request->validate([
+            'content' => 'required|string',
+        ]);
 
-        return Inertia::render('Siswa/Discussions/Index', compact('classroom', 'topic', 'phase', 'discussions'));
-    }
-
-    // Masuk ke dalam Ruang Obrolan
-    public function show(Classroom $classroom, Topic $topic, Phase $phase, Discussion $discussion)
-    {
-        $discussion->load(['user', 'replies.user']);
-
-        return Inertia::render('Siswa/Discussions/Show', compact('classroom', 'topic', 'phase', 'discussion'));
-    }
-
-    // Kirim Balasan/Komentar
-    public function storeReply(Request $request, Discussion $discussion)
-    {
-        $request->validate(['content' => 'required|string']);
-
-        $discussion->replies()->create([
-            'user_id' => auth()->id(),
+        DiscussionReply::create([
+            'discussion_id' => $discussion->id,
+            'user_id' => $request->user()->id,
             'content' => $request->content,
         ]);
 
-        return back();
+        return back()->with('success', 'Balasan berhasil dikirim!');
+    }
+
+    /**
+     * Mengupdate Balasan milik Siswa itu sendiri
+     */
+    public function updateReply(Request $request, DiscussionReply $reply)
+    {
+        // Pastikan balasan ini benar-benar milik siswa yang sedang login
+        if ($reply->user_id !== $request->user()->id) {
+            abort(403, 'Akses ditolak. Anda tidak bisa mengedit komentar orang lain.');
+        }
+
+        $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        $reply->update([
+            'content' => $request->content,
+        ]);
+
+        return back()->with('success', 'Balasan berhasil diperbarui!');
+    }
+
+    /**
+     * Menghapus Balasan milik Siswa itu sendiri
+     */
+    public function destroyReply(Request $request, DiscussionReply $reply)
+    {
+        // Pastikan balasan ini benar-benar milik siswa yang sedang login
+        if ($reply->user_id !== $request->user()->id) {
+            abort(403, 'Akses ditolak. Anda tidak bisa menghapus komentar orang lain.');
+        }
+
+        $reply->delete();
+
+        return back()->with('success', 'Balasan berhasil dihapus.');
     }
 }

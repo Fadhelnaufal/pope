@@ -4,25 +4,19 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiChatLog;
+use App\Models\TopicPhase;
 use App\Jobs\ProcessAiChatJob;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log; // Wajib ditambahkan untuk mencatat error
+use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
-    // Mengambil riwayat chat
     public function index()
     {
         try {
-            // Pastikan user sudah login
-            if (!auth()->check()) {
-                return response()->json(['error' => 'Unauthenticated'], 401);
-            }
+            if (!auth()->check()) return response()->json(['error' => 'Unauthenticated'], 401);
 
-            $logs = AiChatLog::where('user_id', auth()->id())
-                ->orderBy('created_at', 'asc')
-                ->get();
-                
+            $logs = AiChatLog::where('user_id', auth()->id())->orderBy('created_at', 'asc')->get();
             return response()->json($logs);
 
         } catch (\Exception $e) {
@@ -31,47 +25,48 @@ class ChatbotController extends Controller
         }
     }
 
-    // Menyimpan pertanyaan dan melempar ke Queue
     public function store(Request $request)
     {
         try {
-            // 1. Validasi Input
+            // Validasi diwajibkan mengirim phase_id
             $request->validate([
                 'prompt' => 'required|string',
-                'topic_context' => 'nullable|string'
+                'topic_context' => 'nullable|string',
+                'phase_id' => 'required|integer|exists:topic_phases,id'
             ]);
 
-            // 2. Pastikan user valid dan terautentikasi (Mencegah error 'user_id cannot be null')
             if (!auth()->check()) {
                 return response()->json(['error' => 'Sesi Anda telah habis. Silakan refresh halaman.'], 401);
             }
 
-            // 3. Simpan log pertanyaan siswa ke database
+            // ========================================================
+            // KILL-SWITCH (POIN 9): CEK APAKAH GURU MENGAKTIFKAN AI 
+            // ========================================================
+            $phase = TopicPhase::find($request->phase_id);
+            if (!$phase || !$phase->is_ai_enabled) {
+                return response()->json(['error' => 'Fitur AI telah dinonaktifkan oleh Guru pada sesi ini. Chat tidak terkirim.'], 403);
+            }
+
+            // Simpan log pertanyaan siswa
             $chatLog = AiChatLog::create([
                 'user_id' => auth()->id(),
                 'prompt' => $request->prompt,
-                'response' => null, // Dikosongkan karena menunggu AI
+                'response' => null, 
             ]);
 
-            // 4. Lempar ke Queue agar dieksekusi di belakang layar (Terminal)
-            ProcessAiChatJob::dispatch($chatLog, $request->topic_context ?? 'Materi Kimia');
+            // Gabungkan konteks materi dengan Prompt Khusus dari Guru (Jika ada)
+            $context = $request->topic_context ?? 'Materi Kimia';
+            if (!empty($phase->ai_prompt_setting)) {
+                $context .= " | Instruksi Khusus Evaluator: " . $phase->ai_prompt_setting;
+            }
 
-            // 5. Kembalikan response sukses
-            return response()->json([
-                'status' => 'success', 
-                'log_id' => $chatLog->id
-            ]);
+            ProcessAiChatJob::dispatch($chatLog, $context);
+
+            return response()->json(['status' => 'success', 'log_id' => $chatLog->id]);
 
         } catch (\Exception $e) {
-            // JIKA GAGAL: Catat ke laravel.log dan kembalikan pesan error aslinya!
             Log::error('Chatbot Store Error: ' . $e->getMessage());
-            
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
+            return response()->json(['error' => 'Gagal terhubung ke server AI. Coba lagi nanti.'], 500);
         }
     }
 }

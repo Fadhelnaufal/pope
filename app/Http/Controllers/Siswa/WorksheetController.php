@@ -8,6 +8,7 @@ use App\Models\Topic;
 use App\Models\TopicPhase;
 use App\Models\StudentAnswer;
 use App\Models\PhaseContent;
+use App\Models\Discussion; // <-- TAMBAHAN WAJIB
 use App\Jobs\EvaluateStudentAnswerJob;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,10 +48,16 @@ class WorksheetController extends Controller
             return $path ? asset('storage/' . $path) : null;
         })->toArray();
 
-        // =========================================================
         // CEK APAKAH FASE INI SUDAH DI-SUBMIT (DIKUNCI) OLEH SISWA
-        // =========================================================
         $isPhaseSubmitted = $studentData->where('is_submitted', true)->isNotEmpty();
+
+        // =========================================================
+        // TAMBAHAN: AMBIL DATA DISKUSI KHUSUS FASE INI BESERTA BALASANNYA
+        // =========================================================
+        $discussions = Discussion::with(['user', 'replies.user'])
+            ->where('phase_id', $phase->id)
+            ->latest()
+            ->get();
 
         return Inertia::render('Siswa/Worksheet/Show', [
             'classroom' => $classroom,
@@ -60,8 +67,9 @@ class WorksheetController extends Controller
             'aiFeedbacks' => (object) $aiFeedbacks, 
             'studentScores' => (object) $studentScores,
             'studentIsCorrect' => (object) $studentIsCorrect,
-            'studentFiles' => (object) $studentFiles, // KIRIM DATA FILE KE VUE
+            'studentFiles' => (object) $studentFiles, 
             'isPhaseSubmitted' => $isPhaseSubmitted, 
+            'discussions' => $discussions, // KIRIM DATA DISKUSI KE VUE
         ]);
     }
 

@@ -5,93 +5,56 @@ namespace App\Http\Controllers\Guru;
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
 use App\Models\Topic;
-use App\Models\Phase; // <--- WAJIB DI-IMPORT
+use App\Models\TopicPhase;
 use App\Models\Discussion;
 use App\Models\DiscussionReply;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class DiscussionController extends Controller
 {
-    /**
-     * 1. Menampilkan daftar Thread (Judul & Deskripsi)
-     */
-    public function index(Classroom $classroom, Topic $topic, Phase $phase)
+    public function store(Request $request, Classroom $classroom, Topic $topic, TopicPhase $phase)
     {
-        $discussions = Discussion::with('user')
-            ->withCount('replies') // Hitung jumlah komentar
-            ->where('phase_id', $phase->id) // <--- UBAH KE phase_id
-            ->latest() // Urutkan dari yang paling baru dibuat
-            ->get();
-
-        return Inertia::render('Guru/Discussions/Index', compact('classroom', 'topic', 'phase', 'discussions'));
-    }
-
-    /**
-     * 2. Menyimpan Thread/Topik Baru (Sudah disesuaikan ke title & description)
-     */
-    public function store(Request $request, Classroom $classroom, Topic $topic, Phase $phase)
-    {
-        // Validasi input: mencari title dan description
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        // Simpan ke database
+        $request->validate(['title' => 'required|string|max:255', 'description' => 'required|string']);
         Discussion::create([
-            'phase_id' => $phase->id, // <--- UBAH KE phase_id
-            'user_id' => auth()->id(),
+            'phase_id' => $phase->id,
+            'user_id' => $request->user()->id,
             'title' => $request->title,
             'description' => $request->description,
         ]);
-
-        return back();
+        return back()->with('success', 'Topik diskusi berhasil ditambahkan ke fase ini!');
     }
 
-    /**
-     * 3. Menampilkan Halaman Dalam (Ruang Komentar / Chat)
-     */
-    public function show(Classroom $classroom, Topic $topic, Phase $phase, Discussion $discussion)
+    // FUNGSI BARU: UPDATE TOPIK DISKUSI
+    public function update(Request $request, Discussion $discussion)
     {
-        // Tarik data diskusi beserta semua komentarnya
-        $discussion->load(['user', 'replies.user']); 
-
-        return Inertia::render('Guru/Discussions/Show', compact('classroom', 'topic', 'phase', 'discussion'));
+        $request->validate(['title' => 'required|string|max:255', 'description' => 'required|string']);
+        $discussion->update([
+            'title' => $request->title,
+            'description' => $request->description,
+        ]);
+        return back()->with('success', 'Topik diskusi berhasil diperbarui!');
     }
 
-    /**
-     * 4. Simpan Komentar Baru di dalam Thread
-     */
     public function storeReply(Request $request, Discussion $discussion)
     {
-        $request->validate([
-            'content' => 'required|string'
-        ]);
-
-        $discussion->replies()->create([
-            'user_id' => auth()->id(),
+        $request->validate(['content' => 'required|string']);
+        DiscussionReply::create([
+            'discussion_id' => $discussion->id,
+            'user_id' => $request->user()->id,
             'content' => $request->content,
         ]);
-
-        return back();
+        return back()->with('success', 'Balasan berhasil dikirim!');
     }
 
-    /**
-     * 5. Menghapus Thread secara keseluruhan
-     */
     public function destroy(Discussion $discussion)
     {
         $discussion->delete();
-        return back();
+        return back()->with('success', 'Topik diskusi berhasil dihapus.');
     }
 
-    /**
-     * 6. Menghapus Balasan/Komentar secara spesifik
-     */
     public function destroyReply(DiscussionReply $reply)
     {
         $reply->delete();
-        return back();
+        return back()->with('success', 'Balasan berhasil dihapus.');
     }
 }
