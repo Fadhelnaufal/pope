@@ -1,91 +1,91 @@
+Markdown
 # EduChem LMS 🧪
 
-EduChem adalah sebuah Platform Learning Management System (LMS) interaktif yang dirancang khusus untuk pembelajaran Kimia menggunakan metode pedagogi **POE (Predict-Observe-Explain)**. Sistem ini dilengkapi dengan *Dynamic Content Builder* untuk Guru, antarmuka lembar kerja interaktif untuk Siswa, dan **AI Tutor Chatbot**.
+EduChem adalah platform *Learning Management System* (LMS) interaktif yang dirancang khusus untuk pembelajaran Kimia SMA. Sistem ini mengimplementasikan metode pedagogi **POE (Predict-Observe-Explain)** untuk membantu siswa memahami konsep kimia secara mendalam melalui alur kerja yang sistematis.
 
-## 🚀 Teknologi yang Digunakan
-Sistem ini dibangun di atas arsitektur *Monolith Modern* (Server-Driven SPA):
-- **Backend:** Laravel 13, PHP 8.2+
-- **Frontend:** Vue.js 3 (Composition API) + Inertia.js
-- **Styling & UI:** Tailwind CSS, shadcn-vue (Radix Vue), Lucide Icons
-- **AI & Integrasi:** Google Gemini AI (Agentic AI), KaTeX (Scientific Math/Chemistry Renderer)
-- **Database & Task:** MySQL, Laravel Queue (Background Processing)
-- **Role Management:** Spatie Laravel Permission
+## 🚀 Fitur Utama
+
+- **Metode POE:** Alur pembelajaran terstruktur untuk menstimulasi pemikiran kritis siswa.
+- **Dynamic Content Builder:** Guru dapat dengan mudah menyusun materi (Teks, Gambar, H5P) dan soal evaluasi (Pilgan, Esai, Upload File).
+- **Forum Diskusi:** Fitur diskusi per-fase yang dikelola Guru untuk memicu interaksi dua arah.
+- **AI Tutor Chatbot:** Pendamping belajar bertenaga AI untuk memberikan panduan (dengan fitur *Kill-Switch* untuk menonaktifkan AI saat ujian).
+- **Sistem Evaluasi:** Penilaian otomatis untuk soal objektif dan *feedback* AI untuk soal esai.
+
+## 🛠 Teknologi yang Digunakan
+
+**Backend:**
+- Laravel 13, PHP 8.2+
+- PostgreSQL / MySQL
+- Laravel Queue (Redis) untuk background processing
+
+**Frontend:**
+- Vue.js 3 (Composition API)
+- Inertia.js
+- Tailwind CSS
+- shadcn-vue & Lucide Icons
+
+**Integrasi AI:**
+- Google Gemini AI (Agentic AI)
 
 ---
 
 ## 📋 Prasyarat Sistem
 Pastikan perangkat lunak berikut sudah terinstal di komputer Anda:
 - **PHP** >= 8.2
-- **Composer** (Package Manager untuk PHP)
-- **Node.js** (Disarankan v18 LTS ke atas) & **NPM**
-- **MySQL** atau MariaDB
+- **Composer**
+- **Node.js** (v18+) & **NPM**
+- **MySQL** / PostgreSQL
+- **Redis** (Untuk Queue)
 
 ---
 
-## 🛠️ Panduan Instalasi (Langkah-demi-Langkah)
-
-Ikuti langkah di bawah ini untuk menjalankan *project* ini di komputer Anda.
+## 🛠️ Panduan Instalasi
 
 **1. Clone Repositori**
-Buka terminal dan jalankan perintah berikut:
 ```bash
 git clone [https://github.com/Fadhelnaufal/pope.git](https://github.com/Fadhelnaufal/pope.git)
 cd pope
 ```
-
-2. Install Dependensi Backend (PHP)
+2. Install Dependencies
 ```Bash
 composer install
-```
-3. Install Dependensi Frontend (JavaScript/Vue)
-```Bash
 npm install
 ```
-4. Konfigurasi Environment & Database
-Salin file .env.example dan ubah namanya menjadi .env:
+3. Konfigurasi Environment
+Salin file environment:
 ```Bash
 cp .env.example .env
 ```
-Buka file .env menggunakan code editor Anda. Sesuaikan bagian kredensial database dan pastikan Anda mengaktifkan antrean database serta memasukkan API Key Gemini:
-Code snippet
-# Konfigurasi Database (Pastikan buat database kosong bernama lms_educhem di phpMyAdmin)
-```
+Buka file .env dan sesuaikan konfigurasi berikut:
+```Code snippet
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
 DB_DATABASE=lms_educhem
 DB_USERNAME=root
 DB_PASSWORD=
-```
-# Konfigurasi Queue untuk Background Job Chatbot AI
-```
+
 QUEUE_CONNECTION=database
+GEMINI_API_KEY=masukkan_api_key_gemini_anda
 ```
-# Konfigurasi Google Gemini AI
-```
-GEMINI_API_KEY=masukkan_api_key_gemini_anda_di_sini
-```
-5. Generate Application Key & Tautkan Folder Storage
+4. Setup Database & Storage
 ```Bash
 php artisan key:generate
 php artisan storage:link
-```
-6. Jalankan Migrasi Database & Seeder
-(Catatan: Perintah ini akan membuat tabel baru dan mengisi data awal / dummy data termasuk akun pengguna).
-```Bash
 php artisan migrate:fresh --seed
 ```
-💻 Cara Menjalankan Aplikasi (Development)
-Untuk menjalankan aplikasi secara penuh beserta fitur AI Chatbot, Anda wajib membuka 3 tab terminal secara bersamaan:
-Terminal 1 (Server Web Laravel):
+💻 Cara Menjalankan Aplikasi
+Untuk menjalankan aplikasi secara penuh (termasuk fitur AI Chatbot), Anda perlu menjalankan 3 terminal secara bersamaan:
+Terminal 1 (Backend Server):
 ```Bash
 php artisan serve
 ```
-Terminal 2 (Server Frontend / Vite):
+Terminal 2 (Frontend/Vite):
 ```Bash
 npm run dev
 ```
-Terminal 3 (Server Antrean / Worker AI):
+Terminal 3 (Background Worker - Wajib untuk Chatbot AI):
 ```Bash
 php artisan queue:work --timeout=120
 ```
+[ ] Dashboard Analitik Guru
+👥 Kontributor
+Fadhel Naufal — Lead Developer
